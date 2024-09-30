@@ -2,7 +2,7 @@ import type { BlurViewProps } from '@react-native-community/blur'
 import { BlurView } from '@react-native-community/blur'
 import React from 'react'
 import { Platform, StyleSheet } from 'react-native'
-import StaticSafeAreaInsets from 'react-native-static-safe-area-insets'
+import { initialWindowMetrics } from 'react-native-safe-area-context'
 
 const FALLBACK_COLOR = 'rgba(140, 140, 140, 0.3)'
 
@@ -28,6 +28,6 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: StaticSafeAreaInsets.safeAreaInsetsTop,
+    height: initialWindowMetrics?.insets.top ?? 0,
   },
 })

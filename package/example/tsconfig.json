@@ -3,13 +3,8 @@
   "compilerOptions": {
     "paths": {
       "react-native-vision-camera": ["../src/index"]
-    },
+    }
   },
-  "include": [
-    "src",
-    "index.js"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src", "index.tsx"],
+  "exclude": ["node_modules"]
 }

@@ -1,17 +1,17 @@
 import { Dimensions, Platform } from 'react-native'
-import StaticSafeAreaInsets from 'react-native-static-safe-area-insets'
+import { initialWindowMetrics } from 'react-native-safe-area-context'
 
 export const CONTENT_SPACING = 15
 
 const SAFE_BOTTOM =
   Platform.select({
-    ios: StaticSafeAreaInsets.safeAreaInsetsBottom,
+    ios: initialWindowMetrics?.insets.bottom ?? 0,
   }) ?? 0
 
 export const SAFE_AREA_PADDING = {
-  paddingLeft: StaticSafeAreaInsets.safeAreaInsetsLeft + CONTENT_SPACING,
-  paddingTop: StaticSafeAreaInsets.safeAreaInsetsTop + CONTENT_SPACING,
-  paddingRight: StaticSafeAreaInsets.safeAreaInsetsRight + CONTENT_SPACING,
+  paddingLeft: (initialWindowMetrics?.insets.left ?? 0) + CONTENT_SPACING,
+  paddingTop: (initialWindowMetrics?.insets.top ?? 0) + CONTENT_SPACING,
+  paddingRight: (initialWindowMetrics?.insets.right ?? 0) + CONTENT_SPACING,
   paddingBottom: SAFE_BOTTOM + CONTENT_SPACING,
 }
 
@@ -20,7 +20,7 @@ export const MAX_ZOOM_FACTOR = 10
 
 export const SCREEN_WIDTH = Dimensions.get('window').width
 export const SCREEN_HEIGHT = Platform.select<number>({
-  android: Dimensions.get('screen').height - StaticSafeAreaInsets.safeAreaInsetsBottom,
+  android: Dimensions.get('screen').height - (initialWindowMetrics?.insets.bottom ?? 0),
   ios: Dimensions.get('window').height,
 }) as number
 

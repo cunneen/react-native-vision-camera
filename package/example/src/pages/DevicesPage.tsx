@@ -5,10 +5,10 @@ import type { ListRenderItemInfo, SectionListData } from 'react-native'
 import { StyleSheet, View, Text, SectionList } from 'react-native'
 import type { CameraDevice } from 'react-native-vision-camera'
 import { useCameraDevices } from 'react-native-vision-camera'
-import { CONTENT_SPACING, SAFE_AREA_PADDING } from './Constants'
-import type { Routes } from './Routes'
+import { CONTENT_SPACING, SAFE_AREA_PADDING } from '../Constants'
+import type { Routes } from '../Routes'
 import { PressableOpacity } from 'react-native-pressable-opacity'
-import { usePreferredCameraDevice } from './hooks/usePreferredCameraDevice'
+import { usePreferredCameraDevice } from '../hooks/usePreferredCameraDevice'
 
 const keyExtractor = (item: CameraDevice): string => item.id
 
@@ -31,14 +31,7 @@ function Device({ device, onPress }: DeviceProps): React.ReactElement {
       }),
     [device.formats],
   )
-  const maxVideoRes = useMemo(
-    () =>
-      device.formats.reduce((prev, curr) => {
-        if (curr.videoWidth * curr.videoHeight > prev.videoWidth * prev.videoHeight) return curr
-        return prev
-      }),
-    [device.formats],
-  )
+
   const deviceTypes = useMemo(() => device.physicalDevices.map((t) => t.replace('-camera', '')).join(' + '), [device.physicalDevices])
 
   return (
@@ -56,12 +49,7 @@ function Device({ device, onPress }: DeviceProps): React.ReactElement {
           {maxPhotoRes.photoWidth}x{maxPhotoRes.photoHeight}
         </Text>
       </View>
-      <View style={styles.horizontal}>
-        <IonIcon name="videocam" size={12} color="black" />
-        <Text style={styles.resolutionText}>
-          {maxVideoRes.videoWidth}x{maxVideoRes.videoHeight} @ {maxVideoRes.maxFps} FPS
-        </Text>
-      </View>
+
       <Text style={styles.deviceId} numberOfLines={2} ellipsizeMode="middle">
         {device.id}
       </Text>
@@ -168,6 +156,7 @@ const styles = StyleSheet.create({
   },
   list: {
     marginTop: CONTENT_SPACING,
+    paddingLeft: SAFE_AREA_PADDING.paddingLeft,
   },
   listContent: {
     paddingBottom: SAFE_AREA_PADDING.paddingBottom,
