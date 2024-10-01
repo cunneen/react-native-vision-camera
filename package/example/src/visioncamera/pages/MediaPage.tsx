@@ -1,13 +1,14 @@
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useCallback, useMemo, useState } from 'react'
 import type { ImageLoadEventData, NativeSyntheticEvent } from 'react-native'
-import { StyleSheet, View, ActivityIndicator, Image } from 'react-native'
-import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, SAFE_AREA_PADDING } from '../Constants'
+import { ActivityIndicator, Alert, Image, StyleSheet, View } from 'react-native'
 import { PressableOpacity } from 'react-native-pressable-opacity'
 import IonIcon from 'react-native-vector-icons/Ionicons'
-import { Alert } from 'react-native'
-import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
-import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, SAFE_AREA_PADDING } from '../Constants'
 import type { Routes } from '../Routes'
+import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
+import anylogger from 'anylogger'
+const log = anylogger('vision-camera-module')
 
 type OnLoadImage = NativeSyntheticEvent<ImageLoadEventData>
 
@@ -19,10 +20,10 @@ export function MediaPage({ navigation, route }: Props): React.ReactElement {
 
   const onMediaLoad = useCallback((event: OnLoadImage) => {
     const source = event.nativeEvent.source
-    console.log(`Image loaded. Size: ${source.width}x${source.height}`)
+    log.debug(`Image loaded. Size: ${source.width}x${source.height}`)
   }, [])
   const onMediaLoadEnd = useCallback(() => {
-    console.log('media has loaded.')
+    log.debug('media has loaded.')
     setHasMediaLoaded(true)
   }, [])
 

@@ -8,15 +8,17 @@ import Reanimated, {
   Easing,
   Extrapolate,
   interpolate,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
   useAnimatedGestureHandler,
+  useAnimatedStyle,
   useSharedValue,
   withRepeat,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated'
 import type { Camera, PhotoFile, VideoFile } from 'react-native-vision-camera'
 import { CAPTURE_BUTTON_SIZE, SCREEN_HEIGHT, SCREEN_WIDTH } from './../Constants'
+import anylogger from 'anylogger'
+const log = anylogger('vision-camera-module')
 
 const BORDER_WIDTH = CAPTURE_BUTTON_SIZE * 0.1
 
@@ -56,7 +58,7 @@ const _CaptureButton: React.FC<Props> = ({
     try {
       if (camera.current == null) throw new Error('Camera ref is null!')
 
-      console.log('Taking photo...')
+      log.debug('Taking photo...')
 
       const photo = await camera.current.takePhoto({
         flash: flash,
@@ -65,7 +67,7 @@ const _CaptureButton: React.FC<Props> = ({
 
       onMediaCaptured(photo, 'photo')
     } catch (e) {
-      console.error('Failed to take photo!', e)
+      log.error('Failed to take photo!', e)
     }
   }, [camera, flash, onMediaCaptured])
 
@@ -84,7 +86,7 @@ const _CaptureButton: React.FC<Props> = ({
       // if `pressDownDate` was less than 200ms ago, we know that the intention of the user is to take a photo. We check the `takePhotoPromise` if
       // there already is an ongoing (or already resolved) takePhoto() call (remember that we called takePhoto() when the user pressed down), and
       // if yes, use that. If no, we just try calling takePhoto() again
-      console.debug(`state: ${Object.keys(State)[event.state]}`)
+      log.debug(`state: ${Object.keys(State)[event.state]}`)
       switch (event.state) {
         case State.BEGAN: {
           // enter "recording mode"

@@ -1,27 +1,28 @@
+import { useIsFocused } from '@react-navigation/core'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as React from 'react'
-import { useRef, useState, useCallback } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GestureResponderEvent } from 'react-native'
 import { StyleSheet, Text, View } from 'react-native'
-import type { CameraProps, CameraRuntimeError, PhotoFile, VideoFile } from 'react-native-vision-camera'
-import { useCameraDevice, useCameraFormat, useLocationPermission } from 'react-native-vision-camera'
-import { Camera } from 'react-native-vision-camera'
-import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, MAX_ZOOM_FACTOR, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../Constants'
+import { PressableOpacity } from 'react-native-pressable-opacity'
 import Reanimated, {
   /* Extrapolate, interpolate, useAnimatedGestureHandler, */
   useAnimatedProps,
   useSharedValue,
 } from 'react-native-reanimated'
-import { useEffect } from 'react'
-import { useIsForeground } from '../hooks/useIsForeground'
-import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
-import { CaptureButton } from '../views/CaptureButton'
-import { PressableOpacity } from 'react-native-pressable-opacity'
-import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
 import IonIcon from 'react-native-vector-icons/Ionicons'
-import type { Routes } from '../Routes'
-import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { useIsFocused } from '@react-navigation/core'
+import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons'
+import type { CameraProps, CameraRuntimeError, PhotoFile, VideoFile } from 'react-native-vision-camera'
+import { Camera, useCameraDevice, useCameraFormat, useLocationPermission } from 'react-native-vision-camera'
+import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, MAX_ZOOM_FACTOR, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from '../Constants'
+import { useIsForeground } from '../hooks/useIsForeground'
 import { usePreferredCameraDevice } from '../hooks/usePreferredCameraDevice'
+import type { Routes } from '../Routes'
+import { CaptureButton } from '../views/CaptureButton'
+import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
+import anylogger from 'anylogger'
+
+const log = anylogger('vision-camera-module')
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera)
 Reanimated.addWhitelistedNativeProps({
@@ -86,15 +87,15 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     [isPressingButton],
   )
   const onError = useCallback((error: CameraRuntimeError) => {
-    console.error(error)
+    log.error(error)
   }, [])
   const onInitialized = useCallback(() => {
-    console.log('Camera initialized!')
+    log.debug('Camera initialized!')
     setIsCameraInitialized(true)
   }, [])
   const onMediaCaptured = useCallback(
     (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
-      console.log(`Media captured! ${JSON.stringify(media)}`)
+      log.debug(`Media captured! ${JSON.stringify(media)}`)
       navigation.setOptions
       navigation.navigate('MediaPage', {
         file: media,
@@ -136,7 +137,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
       format != null
         ? `(${format.photoWidth}x${format.photoHeight} photo / ${format.videoWidth}x${format.videoHeight}@${format.maxFps} video @ ${fps}fps)`
         : undefined
-    console.log(`Camera: ${device?.name} | Format: ${f}`)
+    log.debug(`Camera: ${device?.name} | Format: ${f}`)
   }, [device?.name, format, fps])
 
   useEffect(() => {
@@ -157,13 +158,13 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
             ref={camera}
             onInitialized={onInitialized}
             onError={onError}
-            onStarted={() => console.log('Camera started!')}
-            onStopped={() => console.log('Camera stopped!')}
-            onPreviewStarted={() => console.log('Preview started!')}
-            onPreviewStopped={() => console.log('Preview stopped!')}
-            onOutputOrientationChanged={(o) => console.log(`Output orientation changed to ${o}!`)}
-            onPreviewOrientationChanged={(o) => console.log(`Preview orientation changed to ${o}!`)}
-            onUIRotationChanged={(degrees) => console.log(`UI Rotation changed: ${degrees}°`)}
+            onStarted={() => log.debug('Camera started!')}
+            onStopped={() => log.debug('Camera stopped!')}
+            onPreviewStarted={() => log.debug('Preview started!')}
+            onPreviewStopped={() => log.debug('Preview stopped!')}
+            onOutputOrientationChanged={(o) => log.debug(`Output orientation changed to ${o}!`)}
+            onPreviewOrientationChanged={(o) => log.debug(`Preview orientation changed to ${o}!`)}
+            onUIRotationChanged={(degrees) => log.debug(`UI Rotation changed: ${degrees}°`)}
             format={format}
             fps={fps}
             photoHdr={photoHdr}

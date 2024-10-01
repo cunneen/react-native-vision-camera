@@ -53,13 +53,7 @@ export function VisionCamera(props: VisionCameraProps): React.ReactElement | nul
             animationTypeForReplace: 'push',
           }}
           initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'CameraPage'}
-          screenListeners={{
-            state: (e) => {
-              // Do something with the state
-              console.log('state changed')
-              console.log(e.data)
-            },
-          }}>
+        >
           <Stack.Screen name="PermissionsPage" component={PermissionsPage} />
           <Stack.Screen name="CameraPage" component={CameraPage} />
           <Stack.Screen

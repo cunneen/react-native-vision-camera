@@ -1,12 +1,13 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import React, { useCallback, useEffect, useState } from 'react'
 import type { ImageRequireSource } from 'react-native'
-import { Linking } from 'react-native'
-import { StyleSheet, View, Text, Image } from 'react-native'
+import { Image, Linking, StyleSheet, Text, View } from 'react-native'
 import type { CameraPermissionStatus } from 'react-native-vision-camera'
 import { Camera } from 'react-native-vision-camera'
 import { CONTENT_SPACING, SAFE_AREA_PADDING } from '../Constants'
 import type { Routes } from '../Routes'
+import anylogger from 'anylogger'
+const log = anylogger('vision-camera-module')
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const BANNER_IMAGE = require('../img/11.png') as ImageRequireSource
@@ -16,9 +17,9 @@ export function PermissionsPage({ navigation }: Props): React.ReactElement {
   const [cameraPermissionStatus, setCameraPermissionStatus] = useState<CameraPermissionStatus>('not-determined')
 
   const requestCameraPermission = useCallback(async () => {
-    console.log('Requesting camera permission...')
+    log.debug('Requesting camera permission...')
     const permission = await Camera.requestCameraPermission()
-    console.log(`Camera permission status: ${permission}`)
+    log.debug(`Camera permission status: ${permission}`)
 
     if (permission === 'denied') await Linking.openSettings()
     setCameraPermissionStatus(permission)

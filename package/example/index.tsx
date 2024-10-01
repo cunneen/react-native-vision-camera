@@ -3,6 +3,7 @@ import 'react-native-gesture-handler'
 import { AppRegistry, Button, StyleSheet, View } from 'react-native'
 import { VisionCamera } from './src/visioncamera/VisionCamera'
 import { initialWindowMetrics } from 'react-native-safe-area-context'
+import 'anylogger-console'
 
 /**
  * This is an example of using React Native Vision Camera as a module within
