@@ -1,44 +1,41 @@
 import { NavigationContainer } from '@react-navigation/native'
-import React from 'react'
-import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import React, { useEffect, useRef, useState } from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { PermissionsPage } from './pages/PermissionsPage'
 import { MediaPage } from './pages/MediaPage'
 import { CameraPage } from './pages/CameraPage'
 import type { Routes } from './Routes'
-import { Camera, type PhotoFile, type VideoFile } from 'react-native-vision-camera'
+import { Camera } from 'react-native-vision-camera'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StyleSheet } from 'react-native'
 import { DevicesPage } from './pages/DevicesPage'
+import anylogger from 'anylogger'
+import { useVisionCameraContext } from './hooks/useVisionCameraContext'
+
+const log = anylogger('vision-camera-module')
 
 const Stack = createNativeStackNavigator<Routes>()
 
-export type VisionCameraProps = {
-  isShown: boolean
-  handlePhotoTaken: (file: PhotoFile | VideoFile) => void
-  handleCancel: () => void
-}
+export function VisionCamera(): React.ReactElement | null {
+  const { state } = useVisionCameraContext()
+  const { shouldShowCameraView } = state
+  const [show, setShow] = useState(shouldShowCameraView)
+  const mountedRef = useRef(true)
 
-export function VisionCamera(props: VisionCameraProps): React.ReactElement | null {
-  const { isShown, handlePhotoTaken, handleCancel } = props
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
-  if (!isShown) return null
+  useEffect(() => {
+    // log.debug('VisionCamera > useEffect; shouldShowCameraView = ', shouldShowCameraView, { state, mountedRef: mountedRef.current }, )
+    if (!mountedRef.current) return
+    if (show !== shouldShowCameraView) setShow(shouldShowCameraView)
+  }, [shouldShowCameraView, show, state])
 
-  const CancelledRoute = (): JSX.Element | null => {
-    React.useEffect(() => {
-      handleCancel()
-    }, [])
-    return null
-  }
-
-  type FinishedRouteProps = NativeStackScreenProps<Routes, 'Finished'>
-  const FinishedRoute = ({ route }: FinishedRouteProps): JSX.Element | null => {
-    const { file, type } = route.params
-    React.useEffect(() => {
-      handlePhotoTaken(file)
-    }, [file, type])
-    return null
-  }
+  if (!show) return null
 
   const cameraPermission = Camera.getCameraPermissionStatus()
 
@@ -52,8 +49,7 @@ export function VisionCamera(props: VisionCameraProps): React.ReactElement | nul
             statusBarStyle: 'dark',
             animationTypeForReplace: 'push',
           }}
-          initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'CameraPage'}
-        >
+          initialRouteName={showPermissionsPage ? 'PermissionsPage' : 'CameraPage'}>
           <Stack.Screen name="PermissionsPage" component={PermissionsPage} />
           <Stack.Screen name="CameraPage" component={CameraPage} />
           <Stack.Screen
@@ -65,8 +61,6 @@ export function VisionCamera(props: VisionCameraProps): React.ReactElement | nul
             }}
           />
           <Stack.Screen name="Devices" component={DevicesPage} />
-          <Stack.Screen name="Cancelled" component={CancelledRoute} />
-          <Stack.Screen name="Finished" component={FinishedRoute} />
         </Stack.Navigator>
       </GestureHandlerRootView>
     </NavigationContainer>

@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ImageLoadEventData, NativeSyntheticEvent } from 'react-native'
 import { ActivityIndicator, Alert, Image, StyleSheet, View } from 'react-native'
 import { PressableOpacity } from 'react-native-pressable-opacity'
@@ -8,45 +8,63 @@ import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, SAFE_AREA_PADDING } from '../Cons
 import type { Routes } from '../Routes'
 import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
 import anylogger from 'anylogger'
+import { useVisionCameraContext } from '../hooks/useVisionCameraContext'
+import { type PhotoFile } from 'react-native-vision-camera'
 const log = anylogger('vision-camera-module')
 
 type OnLoadImage = NativeSyntheticEvent<ImageLoadEventData>
 
 type Props = NativeStackScreenProps<Routes, 'MediaPage'>
 export function MediaPage({ navigation, route }: Props): React.ReactElement {
+  const mountedRef = useRef(true)
   const { file, type } = route.params
+  const { dispatch } = useVisionCameraContext()
+
+  // log.debug('MediaPage2 > state', state)
+
   const [hasMediaLoaded, setHasMediaLoaded] = useState(false)
   const [savingState, setSavingState] = useState<'none' | 'saving' | 'saved'>('none')
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const onMediaLoad = useCallback((event: OnLoadImage) => {
     const source = event.nativeEvent.source
     log.debug(`Image loaded. Size: ${source.width}x${source.height}`)
   }, [])
   const onMediaLoadEnd = useCallback(() => {
+    if (!mountedRef.current) return
     log.debug('media has loaded.')
     setHasMediaLoaded(true)
   }, [])
 
   const onSavePressed = useCallback(() => {
     try {
+      if (!mountedRef.current) return
       setSavingState('saving')
 
       // await CameraRoll.save(`file://${path}`, {
       //   type: type,
       // })
-      navigation.navigate('Finished', {
-        file,
-        type,
+      dispatch({
+        type: 'PHOTO_CAPTURED',
+        payload: { photoFile: file as PhotoFile, type },
       })
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (mountedRef.current) setSavingState('saved')
 
-      setSavingState('saved')
       // handleCancel()
     } catch (e) {
       const message = e instanceof Error ? e.message : JSON.stringify(e)
-      setSavingState('none')
+      if (mountedRef.current) setSavingState('none')
+
       Alert.alert('Failed to save!', `An unexpected error occured while trying to handle your ${type}. ${message}`)
     }
-  }, [file, navigation, type])
+  }, [dispatch, file, type])
 
   const source = useMemo(() => ({ uri: `file://${file.path}` }), [file.path])
 

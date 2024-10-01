@@ -1,10 +1,16 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import 'react-native-gesture-handler'
 import { AppRegistry, Button, StyleSheet, View } from 'react-native'
 import { VisionCamera } from './src/visioncamera/VisionCamera'
 import { initialWindowMetrics } from 'react-native-safe-area-context'
 import 'anylogger-console'
+import { VisionCameraContext, VisionCameraContextType } from './src/visioncamera/context/VisionCameraContext'
+import { type PhotoFile, type VideoFile } from 'react-native-vision-camera'
 
+import anylogger from 'anylogger'
+
+const log = anylogger('vision-camera-module')
+import 'anylogger-console'
 /**
  * This is an example of using React Native Vision Camera as a module within
  * a larger app.
@@ -14,24 +20,33 @@ import 'anylogger-console'
 function VisionCameraExample(): JSX.Element {
   const [shouldShow, setShouldShow] = React.useState(false)
 
+  const handleCancel = useCallback(() => {
+    log.debug('VisionCameraExample handleCancel')
+    setShouldShow(false)
+  }, [])
+
+  const handlePhotoTaken = useCallback((file: PhotoFile | VideoFile) => {
+    log.debug('VisionCameraExample handlePhotoTaken', file)
+    setShouldShow(false)
+  }, [])
+
+  const contextDefaults: VisionCameraContextType = {
+    shouldShowCameraView: shouldShow,
+    setShouldShowCameraView: setShouldShow,
+    onPhotoTaken: handlePhotoTaken,
+    onCancel: handleCancel,
+  }
+
   return (
     <View style={styles.root}>
-      {!shouldShow && (
-        <View style={styles.showCameraButton}>
-          <Button title="Open camera" onPress={() => setShouldShow(true)} />
-        </View>
-      )}
-      <VisionCamera
-        handleCancel={() => {
-          console.log('handleCancel')
-          setShouldShow(false)
-        }}
-        handlePhotoTaken={(file) => {
-          console.log('handlePhotoTaken', file)
-          setShouldShow(false)
-        }}
-        isShown={shouldShow}
-      />
+      <VisionCameraContext.Provider value={contextDefaults}>
+        {!shouldShow && (
+          <View style={styles.showCameraButton}>
+            <Button title="Open camera" onPress={() => setShouldShow(true)} />
+          </View>
+        )}
+        <VisionCamera />
+      </VisionCameraContext.Provider>
     </View>
   )
 }
@@ -49,6 +64,6 @@ const styles = StyleSheet.create({
     top: initialWindowMetrics?.insets.top ?? 0,
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'center',
   },
 })

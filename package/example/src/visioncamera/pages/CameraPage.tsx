@@ -21,6 +21,7 @@ import type { Routes } from '../Routes'
 import { CaptureButton } from '../views/CaptureButton'
 import { StatusBarBlurBackground } from '../views/StatusBarBlurBackground'
 import anylogger from 'anylogger'
+import { useVisionCameraContext } from '../hooks/useVisionCameraContext'
 
 const log = anylogger('vision-camera-module')
 
@@ -36,6 +37,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const location = useLocationPermission()
   const zoom = useSharedValue(1)
   const isPressingButton = useSharedValue(false)
+  const { dispatch } = useVisionCameraContext()
 
   // check if camera page is active
   const isFocussed = useIsFocused()
@@ -50,6 +52,8 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   // camera device settings
   const [preferredDevice] = usePreferredCameraDevice()
   let device = useCameraDevice(cameraPosition)
+
+  const mountedRef = useRef(true)
 
   if (preferredDevice != null && preferredDevice.position === cameraPosition) {
     // override default device with the one selected by the user in settings
@@ -96,13 +100,13 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const onMediaCaptured = useCallback(
     (media: PhotoFile | VideoFile, type: 'photo' | 'video') => {
       log.debug(`Media captured! ${JSON.stringify(media)}`)
-      navigation.setOptions
+      dispatch({ type: 'PREVIEW_PHOTO', payload: { photoFile: media as PhotoFile, type: type } }) // update the state
       navigation.navigate('MediaPage', {
         file: media,
-        type: type,
+        type,
       })
     },
-    [navigation],
+    [dispatch, navigation],
   )
   const onFlipCameraPressed = useCallback(() => {
     setCameraPosition((p) => (p === 'back' ? 'front' : 'back'))
@@ -130,6 +134,13 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
     // Reset zoom to it's default everytime the `device` changes.
     zoom.value = device?.neutralZoom ?? 1
   }, [zoom, device])
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   //#endregion
 
   useEffect(() => {
@@ -202,7 +213,7 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
 
       <StatusBarBlurBackground />
       <View style={styles.leftButtonRow}>
-        <PressableOpacity style={styles.button} onPress={() => navigation.navigate('Cancelled')}>
+        <PressableOpacity style={styles.button} onPress={() => dispatch({ type: 'CANCELLED' })}>
           <IonIcon name="close" size={24} color="white" />
         </PressableOpacity>
       </View>

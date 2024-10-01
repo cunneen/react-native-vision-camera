@@ -15,6 +15,4 @@ export type Routes = {
   CameraPage: undefined
   MediaPage: HandlersWithParams
   Devices: undefined
-  Cancelled: undefined
-  Finished: HandlersWithParams
 }
